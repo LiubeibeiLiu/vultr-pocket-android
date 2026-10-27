@@ -1,0 +1,43 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
+const source=fs.readFileSync(path.join(__dirname,'../assets/web/app.js'),'utf8').replace(/\nboot\(\);\s*$/,'\n');
+let now=1000000,passed=0;
+function context(){const events={},windowEvents={},timers=new Map(),requests=[];let sequence=0;class Clock extends Date{constructor(...a){super(...(a.length?a:[now]))}static now(){return now}}
+ const button={disabled:false,setAttribute(){}};
+ const document={visibilityState:'visible',querySelector(){return button},addEventListener(name,fn){events[name]=fn}};
+ const ctx={Date:Clock,window:{addEventListener(name,fn){windowEvents[name]=fn},scrollTo(){}},document,navigator:{onLine:true},location:{hash:''},URLSearchParams,setTimeout(fn,delay){const id=++sequence;timers.set(id,{fn,delay});return id},clearTimeout(id){timers.delete(id)},console,requests};
+ vm.createContext(ctx);vm.runInContext(source,ctx);vm.runInContext('render=()=>updateRefreshButton();toast=()=>{};api=async(path)=>{requests.push(path);if(path==="/api/session")return session;return reply};state.authenticated=true;state.data=emptyPanelData()',ctx);
+ return {ctx,events,windowEvents,timers,button,run:code=>vm.runInContext(code,ctx),requests};
+}
+const check=fn=>{fn();passed++};
+const fresh=()=>({instances:[],instances_known:true,issues:[],stale:false,cached:false,updated_at:new Date(now).toISOString(),refresh_after_ms:60000,refresh_measured_at_ms:now});
+(async()=>{
+ const c=context();c.ctx.reply=fresh();await c.run('refresh(true)');
+ check(()=>assert.equal(c.requests.length,1));check(()=>assert.equal(c.button.disabled,false));
+ await c.run('refresh(true)');check(()=>assert.equal(c.requests.length,2));
+ await c.run('refresh(false)');check(()=>assert.equal(c.requests.length,2));
+ now+=59999;await c.run('refresh(false)');check(()=>assert.equal(c.requests.length,2));
+ now++;c.ctx.reply=fresh();await c.run('refresh(false)');check(()=>assert.equal(c.requests.length,3));
+ const reopened=context();reopened.ctx.session={authenticated:true,remember_login:true,snapshot:fresh(),refresh_after_ms:45000,refresh_measured_at_ms:now};reopened.ctx.reply=fresh();
+ await reopened.run('boot()');check(()=>assert.deepEqual(reopened.requests,['/api/session']));check(()=>assert.equal(reopened.button.disabled,false));
+ await reopened.run('refresh(true)');check(()=>assert.equal(reopened.requests.length,2));
+ const failure=context();failure.run('api=async()=>{requests.push("failed");throw new Error("network")}');
+ await failure.run('refresh(true)');await failure.run('refresh(true)');check(()=>assert.equal(failure.requests.length,2));check(()=>assert.equal(failure.button.disabled,false));check(()=>assert.equal(failure.run('refreshWaitMillis()'),0));
+ check(()=>assert.equal(failure.timers.size,0));failure.windowEvents.online();check(()=>assert.equal(failure.requests.length,2));check(()=>assert.equal(failure.timers.size,0));
+ failure.ctx.document.visibilityState='hidden';failure.events.visibilitychange();await failure.run('refresh(true)');check(()=>assert.equal(failure.requests.length,2));
+ failure.ctx.document.visibilityState='visible';failure.events.visibilitychange();check(()=>assert.equal(failure.requests.length,2));
+ failure.run('configureAutoRefresh(3)');check(()=>assert.equal([...failure.timers.values()][0].delay,180000));
+ const timer=[...failure.timers.values()][0];failure.timers.clear();await timer.fn();check(()=>assert.equal(failure.requests.length,3));check(()=>assert.equal(failure.timers.size,1));check(()=>assert.equal([...failure.timers.values()][0].delay,180000));
+ failure.run('configureAutoRefresh(0)');check(()=>assert.equal(failure.timers.size,0));await failure.run('refresh(true)');check(()=>assert.equal(failure.requests.length,4));check(()=>assert.equal(failure.timers.size,0));
+ const delayed=context();delayed.ctx.metadata={refresh_after_ms:50000,refresh_measured_at_ms:now-60000};delayed.run('applyRefreshMetadata(metadata)');check(()=>assert.equal(delayed.run('refreshWaitMillis()'),0));
+ const nav=context();let resolveDashboard,resolveSettings;nav.ctx.dashboardPending=new Promise(resolve=>resolveDashboard=resolve);nav.ctx.settingsPending=new Promise(resolve=>resolveSettings=resolve);
+ nav.run('api=async(path)=>{requests.push(path);return path==="/api/settings"?settingsPending:dashboardPending}');
+ const pending=nav.run('refresh(true)');check(()=>assert.equal(nav.button.disabled,true));
+ nav.run('navigate("traffic")');check(()=>assert.equal(nav.run('state.view'),'traffic'));
+ const opening=nav.run('openSettings()');check(()=>assert.equal(nav.run('state.view'),'settings'));
+ nav.run('navigate("billing")');resolveSettings({refresh_minutes:0});await opening;check(()=>assert.equal(nav.run('state.view'),'billing'));
+ resolveDashboard(fresh());await pending;check(()=>assert.equal(nav.run('state.view'),'billing'));check(()=>assert.equal(nav.button.disabled,false));
+ const ui=context();ui.run('state.settings={refresh_minutes:3}');const markup=ui.run('settingsView()'),options=ui.run('autoRefreshOptions(3)');
+ check(()=>assert.match(markup,/aria-haspopup="dialog"/));check(()=>assert.equal((options.match(/data-refresh-minutes=/g)||[]).length,4));check(()=>assert.doesNotMatch(markup,/<select|设置刷新时间|程序在前台/));check(()=>assert.match(options,/aria-selected="true" data-refresh-minutes="3"/));
+ check(()=>assert.doesNotMatch(markup,/auto-refresh-help|role="listbox"/));
+ console.log(`Refresh rules, styled picker and navigation: ${passed}/${passed} checks passed`);
+})().catch(e=>{console.error(e);process.exitCode=1});

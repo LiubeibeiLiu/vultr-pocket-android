@@ -1,0 +1,13 @@
+Tinos Regular and Bold, unmodified Google Fonts binaries.
+Metric-compatible fallback for Times New Roman.
+Project: https://github.com/googlefonts/tinos
+Source metadata commit: 3b4482a99b80ea5fc75f187b1be3120a3f5905b3
+License: SIL Open Font License 1.1; copyright and full text in Tinos-OFL.txt.
+
+Tinos-Regular.ttf
+SHA-256: 60a0e8ef0c04dd5dd69ffe91025fa2ae5836cbd35600a82ba031977557e2cb61
+Source: https://raw.githubusercontent.com/google/fonts/main/ofl/tinos/Tinos-Regular.ttf
+
+Tinos-Bold.ttf
+SHA-256: 393269dbab8899f938db19783eca5eac92eb431f7ae0ab45b8349ca895f1a06b
+Source: https://raw.githubusercontent.com/google/fonts/main/ofl/tinos/Tinos-Bold.ttf

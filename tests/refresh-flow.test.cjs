@@ -1,0 +1,33 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),path=require('node:path');
+const source=fs.readFileSync(path.join(__dirname,'../assets/web/app.js'),'utf8').replace(/\nboot\(\);\s*$/,'\n');
+const timers=new Map(),events={};let sequence=0,passed=0;
+const document={visibilityState:'visible',querySelector(){return {}},addEventListener(name,fn){events[name]=fn}};
+const ctx={window:{addEventListener(){},scrollTo(){}},document,navigator:{onLine:true},location:{hash:''},URLSearchParams,setTimeout(fn,delay){const id=++sequence;timers.set(id,{fn,delay});return id},clearTimeout(id){timers.delete(id)},console};
+vm.createContext(ctx);vm.runInContext(source,ctx);
+const run=code=>vm.runInContext(code,ctx),check=fn=>{fn();passed++};
+run('render=()=>{};toast=()=>{};state.authenticated=true;refresh=async(force)=>{refreshCount++;refreshForces.push(force)};api=async()=>({})');ctx.refreshCount=0;ctx.refreshForces=[];
+(async()=>{
+ check(()=>assert.equal(run('state.refreshMinutes'),0));
+ run('configureAutoRefresh(0)');check(()=>assert.equal(timers.size,0));
+ for(const minutes of [1,3,5]){run(`configureAutoRefresh(${minutes})`);check(()=>{assert.equal(timers.size,1);assert.equal([...timers.values()][0].delay,minutes*60000)})}
+ run('configureAutoRefresh(2)');check(()=>assert.equal(timers.size,0));
+ run('configureAutoRefresh("1")');check(()=>assert.equal(run('state.refreshMinutes'),0));
+ run('configureAutoRefresh(1)');const timer=[...timers.values()][0];timers.clear();await timer.fn();check(()=>{assert.equal(ctx.refreshCount,1);assert.equal(ctx.refreshForces[0],false)});check(()=>assert.equal(timers.size,1));
+ document.visibilityState='hidden';events.visibilitychange();check(()=>assert.equal(timers.size,0));
+ run('configureAutoRefresh(3)');check(()=>assert.equal(timers.size,0));
+ run('state.data={updated_at:new Date(Date.now()-240000).toISOString()}');document.visibilityState='visible';events.visibilitychange();check(()=>assert.equal(ctx.refreshCount,2));check(()=>assert.equal(timers.size,1));
+ run('configureAutoRefresh(0)');events.visibilitychange();check(()=>assert.equal(ctx.refreshCount,2));check(()=>assert.equal(timers.size,0));
+ run('configureAutoRefresh(5)');await run('logout()');check(()=>assert.equal(timers.size,0));check(()=>assert.equal(run('state.authenticated'),false));
+ run('configureAutoRefresh(1)');check(()=>assert.equal(timers.size,0));
+ ctx.samples={daily:[{date:'2026-08-01',in_bytes:1,out_bytes:2},{date:'2026-10-24',in_bytes:3,out_bytes:4}]};
+ check(()=>assert.equal(run('dailyWindow(samples).rows.length'),60));
+ check(()=>assert.equal(run('dailyWindow(samples).rows.at(-1).date'),'2026-10-24'));
+ check(()=>assert.equal(run('dailyWindow(samples).rows[1].out_bytes'),null));
+ check(()=>assert.match(run('chart(samples)'),/class="chart-legend"/));
+ check(()=>assert.match(run('chart(samples)'),/r="1.7"/));
+ check(()=>assert.match(run('curvePath([{x:0,y:0},{x:10,y:20}])'),/^M0 0 C5 0 5 20 10 20$/));
+ run('state.logs=[{time:"2026-10-24T09:00:00Z",section:"connection",code:"timeout",message:"test"}]');
+ check(()=>assert.doesNotMatch(run('logsView()'),/连接记录|<h2|<circle/));
+ check(()=>assert.doesNotMatch(run('logView()'),/<h2|<circle/));
+ console.log(`Refresh lifecycle and curve history: ${passed}/${passed} checks passed`);
+})().catch(e=>{console.error(e);process.exitCode=1});
