@@ -14,4 +14,4 @@ Bug reports should include app version, Android/WebView version, reproduction st
 
 请用合成数据与可复现步骤说明问题。修改流量或计费逻辑时，附官方字段与口径出处，区分实例、账户、估算和实际账单。没有真机验收就明确写出，不把组件测试描述成真机通过。
 
-Contributions are submitted under the project's MIT license, except third-party assets which retain their own licenses. Keep PRs focused and describe what was tested and what remains unverified.
+Contributions intentionally submitted for inclusion are offered under GPL-3.0-only, unless explicitly agreed otherwise. Each author retains copyright; submit only code you can license compatibly. Third-party assets retain their own licenses. Keep PRs focused and describe what was tested and what remains unverified.

@@ -5,7 +5,7 @@
 [简体中文](README.zh-CN.md) · [Build from source](docs/BUILDING.md) · [Data semantics](docs/DATA.md) · [Security](SECURITY.md)
 
 ![Android 8+](https://img.shields.io/badge/Android-8.0%2B-647b9d)
-![License MIT](https://img.shields.io/badge/License-MIT-647b9d)
+![License GPLv3](https://img.shields.io/badge/License-GPLv3-647b9d)
 ![No backend](https://img.shields.io/badge/Backend-None-647b9d)
 
 Vultr Pocket is an unofficial, self-contained Android VPS monitor. It connects directly to the Vultr v2 REST API from native Android code, with a bundled HTML/CSS/JavaScript interface. No server to deploy, no monitoring agent to install, no analytics service.
@@ -94,6 +94,6 @@ Bug reports, small fixes and documentation improvements are welcome. Read [CONTR
 
 ## License and attribution
 
-Project code is [MIT licensed](LICENSE). Bundled Tinos fonts use SIL OFL 1.1 and Lucide-derived SVG icons use ISC; their notices remain in [licenses/](licenses/) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Times New Roman is not redistributed.
+Project code is licensed under [GNU GPL version 3 only](LICENSE), SPDX `GPL-3.0-only`; see [COPYRIGHT](COPYRIGHT) and [licensing details](docs/LICENSING.md). Commercial use is allowed under the license; distribution of covered works and modifications must meet its corresponding-source and same-license conditions. Earlier MIT snapshots retain their original notices. Bundled Tinos fonts use SIL OFL 1.1 and Lucide-derived SVG icons use ISC; their notices remain in [licenses/](licenses/) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Times New Roman is not redistributed.
 
 Vultr Pocket is independent and is not affiliated with, endorsed by, or an official product of Vultr. Vultr names identify the service with which this application interoperates.

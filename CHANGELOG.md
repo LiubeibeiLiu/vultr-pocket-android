@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-28
 
+- Offer current project code under GPL-3.0-only; retain third-party notices and earlier MIT history.
+
 - Add persistent Simplified Chinese / English selection in Settings; default to Chinese.
 - Share one message catalog across the page, native dialogs and error presentation.
 - Match the language picker to the existing rounded selection dialogs and retain 48-pixel close controls.

@@ -1,0 +1,21 @@
+Vultr Pocket
+Copyright (c) 2026 Vultr Pocket contributors
+SPDX-License-Identifier: GPL-3.0-only
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, version 3 only.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+The complete license text is provided in LICENSE.
+
+Third-party fonts and icons retain their own copyright notices and
+licenses. See THIRD_PARTY_NOTICES.md and licenses/.
+
+This notice applies to distributions designated GPL-3.0-only. Earlier
+repository snapshots published under MIT retain their original notices;
+this update does not rewrite that history or revoke earlier grants.

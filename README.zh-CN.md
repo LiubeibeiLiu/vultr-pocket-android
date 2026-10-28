@@ -5,7 +5,7 @@
 [English](README.md) · [源码构建](docs/BUILDING.md) · [数据口径](docs/DATA.md) · [安全说明](SECURITY.md)
 
 ![Android 8+](https://img.shields.io/badge/Android-8.0%2B-647b9d)
-![MIT 许可证](https://img.shields.io/badge/License-MIT-647b9d)
+![GPLv3 许可证](https://img.shields.io/badge/License-GPLv3-647b9d)
 ![无需后端](https://img.shields.io/badge/Backend-None-647b9d)
 
 Vultr Pocket 是独立运行的非官方 Vultr 安卓管理看板。原生 Android 代码直连 Vultr v2 REST API，界面使用 APK 内置的 HTML、CSS 和 JavaScript。无需部署服务器，无需在 VPS 安装采集代理，无第三方分析服务。
@@ -92,6 +92,6 @@ licenses/                    字体与图标许可证
 
 问题报告、修复和文档改进请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。提供复现步骤和脱敏日志；安全问题按 [SECURITY.md](SECURITY.md) 私下报告。
 
-项目代码采用 [MIT](LICENSE)。Tinos 字体为 SIL OFL 1.1，Lucide 来源 SVG 图标为 ISC，保留各自声明，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。项目不分发 Times New Roman。
+项目代码采用 [GPL-3.0-only](LICENSE)，仅限 GNU GPL 第 3 版，见 [COPYRIGHT](COPYRIGHT) 和[授权说明](docs/LICENSING.md)。允许商用；对外分发 GPL 覆盖的程序或修改版须遵守源码提供、同许可证分发等条件。既有 MIT 快照保留原授权声明。Tinos 字体为 SIL OFL 1.1，Lucide 来源 SVG 图标为 ISC，保留各自声明，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。项目不分发 Times New Roman。
 
 本项目独立维护，与 Vultr 无隶属或背书关系；Vultr 名称仅用于说明对接的服务。
