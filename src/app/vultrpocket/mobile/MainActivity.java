@@ -41,7 +41,7 @@ import org.json.JSONObject;
 
 public final class MainActivity extends Activity {
     private static final String ORIGIN = "appassets.androidplatform.net";
-    private static final Set<String> ASSETS = new HashSet<>(Arrays.asList("index.html", "app.js", "style.css", "icon.svg", "icon-192.png", "icon-512.png", "manifest.webmanifest", "fonts/Tinos-Regular.ttf", "fonts/Tinos-Bold.ttf"));
+    private static final Set<String> ASSETS = new HashSet<>(Arrays.asList("index.html", "app.js", "style.css", "icon.svg", "icon-192.png", "icon-512.png", "manifest.webmanifest", "fonts/Tinos-Regular.ttf", "fonts/Tinos-Bold.ttf", "i18n.js", "i18n-data.js", "locales/en.json"));
     private WebView web;
     private Vault vault;
     private RefreshGate refreshGate;
@@ -60,7 +60,7 @@ public final class MainActivity extends Activity {
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
-        try { vault = new Vault(this); } catch (Exception e) { new AlertDialog.Builder(this).setMessage("无法初始化安全存储，请重新安装应用").setPositiveButton("关闭", (d,w)->finish()).setCancelable(false).show(); return; }
+        try { vault = new Vault(this); I18n.initialize(this,vault.language()); } catch (Exception e) { new AlertDialog.Builder(this).setMessage(I18n.text("无法初始化安全存储，请重新安装应用")).setPositiveButton(I18n.text("关闭"), (d,w)->finish()).setCancelable(false).show(); return; }
         refreshGate=new RefreshGate(new RefreshGate.Store(){public RefreshGate.Record load(){return vault.refreshRecord();}public void save(RefreshGate.Record record)throws Exception{vault.saveRefreshRecord(record);}});
         deviceUnlock=new DeviceUnlock(this);
         LinearLayout container = new LinearLayout(this); container.setBackgroundColor(Color.rgb(239,239,243));
@@ -99,7 +99,7 @@ public final class MainActivity extends Activity {
     private final class Bridge {
         @JavascriptInterface public void request(String id,String action,String body){
             if(id==null||!id.matches("[a-zA-Z0-9-]{1,64}")||action==null||body==null||body.length()>8192)return;
-            boolean refreshPreference=false;try{refreshPreference=action.equals("preferences")&&new JSONObject(body).has("refresh_minutes");}catch(Exception ignored){}
+            boolean refreshPreference=false;try{refreshPreference=action.equals("preferences")&&(new JSONObject(body).has("refresh_minutes")||new JSONObject(body).has("language"));}catch(Exception ignored){}
             if(action.equals("logout"))vultr.cancelReads();
             try {(BridgeDispatch.local(action,refreshPreference)?localWorker:worker).execute(()->handle(id,action,body));} catch(java.util.concurrent.RejectedExecutionException e){reply(id,429,null,"请稍后重试");}
         }
@@ -107,7 +107,7 @@ public final class MainActivity extends Activity {
     private void handle(String id,String action,String body){
         try {
             JSONObject input=new JSONObject(body);
-            if(action.equals("session")){boolean auth=authenticated();JSONObject snapshot=null;if(auth)try{snapshot=vault.snapshot(vault.token());if(snapshot!=null)vultr.seed(snapshot);}catch(Exception e){vultr.recordLocalFailure("snapshot_storage","本机缓存暂时无法读取，将重新获取数据");}reply(id,200,refreshMetadata(new JSONObject().put("authenticated",auth).put("password_setup_required",vault.needsPasswordSetup()).put("retry_login_restore",!auth&&!vault.deviceUnlock()&&vault.rememberLogin()&&vault.retryLoginRestore()).put("version",AppBuild.VERSION).put("remember_login",vault.rememberLogin()).put("device_unlock_enabled",vault.deviceUnlock()).put("device_unlock_available",deviceUnlock.available()).put("refresh_minutes",vault.refreshMinutes()).put("reboot_enabled",auth&&vault.rebootEnabled()).put("snapshot",snapshot==null?JSONObject.NULL:snapshot),auth),null);return;}
+            if(action.equals("session")){boolean auth=authenticated();JSONObject snapshot=null;if(auth)try{snapshot=vault.snapshot(vault.token());if(snapshot!=null)vultr.seed(snapshot);}catch(Exception e){vultr.recordLocalFailure("snapshot_storage","本机缓存暂时无法读取，将重新获取数据");}reply(id,200,refreshMetadata(new JSONObject().put("authenticated",auth).put("password_setup_required",vault.needsPasswordSetup()).put("retry_login_restore",!auth&&!vault.deviceUnlock()&&vault.rememberLogin()&&vault.retryLoginRestore()).put("language",vault.language()).put("version",AppBuild.VERSION).put("remember_login",vault.rememberLogin()).put("device_unlock_enabled",vault.deviceUnlock()).put("device_unlock_available",deviceUnlock.available()).put("refresh_minutes",vault.refreshMinutes()).put("reboot_enabled",auth&&vault.rebootEnabled()).put("snapshot",snapshot==null?JSONObject.NULL:snapshot),auth),null);return;}
             if(action.equals("setup_password")){
                 if(!vault.needsPasswordSetup()){reply(id,409,null,"访问密码已设置，请直接登录");return;}
                 String password=input.optString("password",""),confirmation=input.optString("confirmation","");
@@ -143,6 +143,7 @@ public final class MainActivity extends Activity {
             if(action.equals("logs")){reply(id,200,new JSONObject().put("entries",vultr.logs()),null);return;}
             if(action.equals("clear_logs")){vultr.clearLogs();reply(id,200,new JSONObject().put("ok",true),null);return;}
             if(action.equals("preferences")){
+                if(input.has("language")){Object raw=input.opt("language");if(!(raw instanceof String)||!LanguagePolicy.supported((String)raw)){reply(id,400,null,I18n.text("设置无效"));return;}vault.setLanguage((String)raw);I18n.setLanguage((String)raw);reply(id,200,settingsData(),null);return;}
                 if(input.has("refresh_minutes")){Object raw=input.opt("refresh_minutes");if(!(raw instanceof Number)||((Number)raw).doubleValue()!=((Number)raw).intValue()||!RefreshPolicy.validMinutes(((Number)raw).intValue())){reply(id,400,null,"刷新时间无效");return;}vault.setRefreshMinutes(((Number)raw).intValue());reply(id,200,settingsData(),null);return;}
                 if(input.opt("reboot_enabled") instanceof Boolean){vault.setRebootEnabled(input.getBoolean("reboot_enabled"));credentialGeneration++;reply(id,200,settingsData(),null);return;}
                 String mode=input.optString("login_mode","");
@@ -157,7 +158,7 @@ public final class MainActivity extends Activity {
         }catch(Exception e){reply(id,500,null,"操作失败，请重试");}
     }
     private void reply(String id,int status,JSONObject value,String error){
-        try {JSONObject response=new JSONObject().put("status",status).put("data",value==null?JSONObject.NULL:value).put("error",error==null?JSONObject.NULL:error);
+        try {JSONObject response=new JSONObject().put("status",status).put("data",value==null?JSONObject.NULL:value).put("error",error==null?JSONObject.NULL:I18n.text(error));
             String script="window.__nativeReply&&window.__nativeReply("+JSONObject.quote(id)+","+response+")";
             runOnUiThread(()->{if(!destroyed&&web!=null)web.evaluateJavascript(script,null);});
         }catch(Exception ignored){}
@@ -215,18 +216,18 @@ public final class MainActivity extends Activity {
     private void editToken(){
         EditText input=PanelDialogs.field(this,"输入 API Token");
         PanelDialogs.form(this,"API Token","",new EditText[]{input},"保存",(dialog,error)->{
-            String token=input.getText().toString().trim();if(token.length()<16||token.length()>4096||token.matches("(?s).*\\s.*")){error.setText("请输入有效 Token");return;}dialog.dismiss();submitSetting(()->vault.saveToken(token));
+            String token=input.getText().toString().trim();if(token.length()<16||token.length()>4096||token.matches("(?s).*\\s.*")){error.setText(I18n.text("请输入有效 Token"));return;}dialog.dismiss();submitSetting(()->vault.saveToken(token));
         });
     }
     private void editPassword(){
         EditText old=PanelDialogs.field(this,"当前密码"),fresh=PanelDialogs.field(this,"新密码（至少8字符）"),again=PanelDialogs.field(this,"确认新密码");
         PanelDialogs.form(this,"密码修改","",new EditText[]{old,fresh,again},"保存",(dialog,error)->{
-            String previous=old.getText().toString(),next=fresh.getText().toString();if(!PasswordPolicy.acceptable(next,again.getText().toString())){error.setText("两次密码须相同，且至少8字符");return;}dialog.dismiss();submitSetting(()->{if(!vault.checkPassword(previous))throw new Exception("wrong_password");vault.changePassword(next);});
+            String previous=old.getText().toString(),next=fresh.getText().toString();if(!PasswordPolicy.acceptable(next,again.getText().toString())){error.setText(I18n.text("两次密码须相同，且至少8字符"));return;}dialog.dismiss();submitSetting(()->{if(!vault.checkPassword(previous))throw new Exception("wrong_password");vault.changePassword(next);});
         });
     }
     private interface Change{void execute()throws Exception;}
     private void submitSetting(Change change){vultr.cancelReads();
-        try {worker.execute(()->{try{if(!authenticated())return;change.execute();credentialGeneration++;vultr.clear();runOnUiThread(()->{if(!destroyed){Toast.makeText(this,"已保存",Toast.LENGTH_SHORT).show();web.evaluateJavascript("window.__nativeSettingsSaved&&window.__nativeSettingsSaved()",null);}});}catch(Exception e){runOnUiThread(()->Toast.makeText(this,"保存失败，请检查输入",Toast.LENGTH_SHORT).show());}});}catch(java.util.concurrent.RejectedExecutionException e){Toast.makeText(this,"请稍后重试",Toast.LENGTH_SHORT).show();}
+        try {worker.execute(()->{try{if(!authenticated())return;change.execute();credentialGeneration++;vultr.clear();runOnUiThread(()->{if(!destroyed){Toast.makeText(this,I18n.text("已保存"),Toast.LENGTH_SHORT).show();web.evaluateJavascript("window.__nativeSettingsSaved&&window.__nativeSettingsSaved()",null);}});}catch(Exception e){runOnUiThread(()->Toast.makeText(this,I18n.text("保存失败，请检查输入"),Toast.LENGTH_SHORT).show());}});}catch(java.util.concurrent.RejectedExecutionException e){Toast.makeText(this,I18n.text("请稍后重试"),Toast.LENGTH_SHORT).show();}
     }
     @Override protected void onStart(){super.onStart();vultr.setForeground(true);if(web!=null)web.resumeTimers();}
     @Override protected void onStop(){vultr.setForeground(false);if(web!=null){web.onPause();web.pauseTimers();}super.onStop();lastStop=SystemClock.elapsedRealtime();if(deviceUnlock!=null)deviceUnlock.cancel();}

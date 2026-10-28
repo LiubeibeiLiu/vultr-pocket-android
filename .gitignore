@@ -25,3 +25,5 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+
+/assets/web/i18n-data.js

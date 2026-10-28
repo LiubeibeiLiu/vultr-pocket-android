@@ -6,8 +6,10 @@ param(
   [string]$OutputApk = (Join-Path $PSScriptRoot 'Vultr-Pocket-Android.apk')
 )
 $ErrorActionPreference='Stop'
+& node (Join-Path $PSScriptRoot 'tools/sync-locales.cjs')
+if($LASTEXITCODE-ne 0){throw 'Locale generation failed'}
 $assetRoot=Join-Path $PSScriptRoot 'assets'
-$allowedAssets=@('build-info.json','web/index.html','web/app.js','web/style.css','web/manifest.webmanifest','web/icon.svg','web/icon-192.png','web/icon-512.png','web/NOTICE.txt','web/fonts/OFL.txt','web/fonts/Tinos-Regular.ttf','web/fonts/Tinos-Bold.ttf')
+$allowedAssets=@('build-info.json','web/index.html','web/app.js','web/style.css','web/manifest.webmanifest','web/icon.svg','web/icon-192.png','web/icon-512.png','web/NOTICE.txt','web/i18n.js','web/i18n-data.js','web/locales/en.json','web/fonts/OFL.txt','web/fonts/Tinos-Regular.ttf','web/fonts/Tinos-Bold.ttf')
 foreach($assetFile in Get-ChildItem -LiteralPath $assetRoot -Recurse -File){
   $assetPath=[System.IO.Path]::GetRelativePath($assetRoot,$assetFile.FullName).Replace('\','/')
   if($assetPath -notin $allowedAssets){throw ('Unexpected asset; review before packaging: '+$assetPath)}
@@ -77,7 +79,7 @@ if ($LASTEXITCODE -ne 0) { throw 'APK signature verification failed' }
 if ($LASTEXITCODE -ne 0) { throw 'APK alignment verification failed' }
 $verifyArchive=[System.IO.Compression.ZipFile]::OpenRead($OutputApk)
 try {
-  foreach ($assetName in @('AndroidManifest.xml','classes.dex','assets/web/index.html','assets/web/app.js','assets/web/style.css','assets/web/NOTICE.txt','assets/web/fonts/OFL.txt')) {
+  foreach ($assetName in @('AndroidManifest.xml','classes.dex','assets/web/index.html','assets/web/app.js','assets/web/style.css','assets/web/NOTICE.txt','assets/web/i18n.js','assets/web/i18n-data.js','assets/web/locales/en.json','assets/web/fonts/OFL.txt')) {
     if (-not $verifyArchive.GetEntry($assetName)) { throw ('Missing final APK member: '+$assetName) }
   }
   if (@($verifyArchive.Entries | Where-Object { $_.FullName.Contains('\') }).Count) { throw 'Invalid Android asset separator' }

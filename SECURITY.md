@@ -32,4 +32,4 @@ Never commit `.env`, signing keys/passwords, local vault files, real API respons
 
 Do not place tokens or exploitable private-account details in a public issue. Use GitHub's private vulnerability reporting **if the repository offers it**. If it is unavailable, open a minimal issue asking for a private reporting channel without posting the vulnerability details. No guaranteed response window or formal security audit is claimed.
 
-当前公开版本为 1.0.0。安全修复针对当前主分支；不承诺维护个人历史构建或第三方再分发版本。真机认证、Keystore 和真实重启仍需设备/账户验收，离线测试不能替代。
+当前公开版本为 1.1.0。安全修复针对当前主分支；不承诺维护个人历史构建或第三方再分发版本。真机认证、Keystore 和真实重启仍需设备/账户验收，离线测试不能替代。

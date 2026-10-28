@@ -96,6 +96,8 @@ final class Vault {
     synchronized void saveRefreshRecord(RefreshGate.Record record) throws Exception {if(!prefs.edit().putInt("refresh_success_version",1).putString("refresh_binding",record.binding).putLong("refresh_attempted_at",record.succeededAt).putLong("refresh_anchor_wall",record.wall).putLong("refresh_anchor_elapsed",record.elapsed).putLong("refresh_boot",record.boot).commit())throw new Exception("save_failed");}
     synchronized String refreshBinding() throws Exception {if(!hasToken())return "";String fingerprint=prefs.getString("token_binding","");return fingerprint.isEmpty()?binding(token()):fingerprint;}
     synchronized boolean rebootEnabled(){return prefs.getBoolean("reboot_enabled",false);}
+    synchronized String language(){return LanguagePolicy.normalize(prefs.getString("language","zh-CN"));}
+    synchronized void setLanguage(String language)throws Exception{if(!LanguagePolicy.supported(language))throw new IllegalArgumentException("invalid_language");if(!prefs.edit().putString("language",language).commit())throw new Exception("save_failed");}
     synchronized int refreshMinutes(){int minutes=prefs.getInt("refresh_minutes",0);return RefreshPolicy.validMinutes(minutes)?minutes:0;}
     synchronized void setRefreshMinutes(int minutes) throws Exception {if(!RefreshPolicy.validMinutes(minutes))throw new IllegalArgumentException("invalid_refresh");if(!prefs.edit().putInt("refresh_minutes",minutes).commit())throw new Exception("save_failed");}
     synchronized void setRebootEnabled(boolean enabled) throws Exception {if(!prefs.edit().putBoolean("reboot_enabled",enabled).commit())throw new Exception("save_failed");}

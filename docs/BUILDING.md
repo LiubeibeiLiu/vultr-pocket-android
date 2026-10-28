@@ -7,7 +7,7 @@
 - Windows with PowerShell 7 (`pwsh`). The build script currently uses Windows Android SDK executables; Linux/macOS builds are not provided.
 - JDK 21 or later, with `java`, `javac` and `keytool` on PATH. Local validation used JDK 22.
 - Official Android SDK Platform 36 and Build Tools 36.0.0, installed through Google's SDK tools. Set `ANDROID_HOME` to the SDK root.
-- Node.js 22+ for JavaScript tests and the optional browser preview. No npm installation is needed.
+- Node.js 22+ for local message-catalog generation during builds, JavaScript tests and the optional browser preview. No npm installation is needed.
 
 The app uses Java 8 bytecode, minSdk 26 and targetSdk 36. It has no native `.so` files and no ABI split: the same APK works with arm64-v8a. No Gradle or Android Studio project generation step is required.
 

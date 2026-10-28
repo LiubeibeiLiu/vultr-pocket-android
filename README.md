@@ -10,12 +10,12 @@
 
 Vultr Pocket is an unofficial, self-contained Android VPS monitor. It connects directly to the Vultr v2 REST API from native Android code, with a bundled HTML/CSS/JavaScript interface. No server to deploy, no monitoring agent to install, no analytics service.
 
-The current app interface is in Simplified Chinese. This repository contains the source and build instructions; a prebuilt public release is not included.
+The app supports **Simplified Chinese (default) and English**. Switch in **Settings → Language**. [Download the signed APK](https://github.com/LiubeibeiLiu/vultr-pocket-android/releases/latest) or build from source. Android 8.0+; compatible with ARM64 (arm64-v8a).
 
 <p align="center">
-  <img src="docs/images/overview.jpg" width="240" alt="Overview with instance status and account summary">
-  <img src="docs/images/traffic.jpg" width="240" alt="Bandwidth quota and monthly traffic cards">
-  <img src="docs/images/settings.jpg" width="240" alt="Settings and auto-refresh picker">
+  <img src="docs/images/overview-en.jpg" width="240" alt="Overview with instance status and account summary">
+  <img src="docs/images/traffic-en.jpg" width="240" alt="Bandwidth quota and monthly traffic cards">
+  <img src="docs/images/settings-en.jpg" width="240" alt="English settings and persistent language selection">
 </p>
 
 Screenshots are browser previews with **synthetic component-test data**, not a real account or Android device capture. Documentation IP addresses are used. The preview adapter is not bundled in the APK.
@@ -30,6 +30,7 @@ Screenshots are browser previews with **synthetic component-test data**, not a r
 | Account | Pending charges, available-balance presentation, recent invoices and last payment |
 | Settings | Native token entry, password change, local error logs, foreground auto-refresh and optional instance reboot |
 
+- **Chinese and English.** Change language in Settings, with the same picker style as auto-refresh. Your choice survives relaunch and does not trigger an API refresh. [Language implementation](docs/I18N.md).
 - **Local credentials.** Set your own app password on first launch. The API token is entered through a native dialog and encrypted with Android Keystore; JavaScript never receives it.
 - **Convenient return visits.** Remember-login uses an encrypted, fixed 30-day ticket. System verification uses the Android authentication prompt, with supported biometrics or device credentials as available on the device.
 - **Designed for weak networks.** Show an eligible cached snapshot first, then refresh. Failed requests keep older data without advancing the last-success timestamp. Details stay in local logs.
@@ -39,7 +40,7 @@ Screenshots are browser previews with **synthetic component-test data**, not a r
 
 ## Start using it
 
-1. [Build and sign the APK](docs/BUILDING.md), then install it on Android 8.0 or later. Java DEX supports arm64-v8a without native ABI libraries.
+1. Download the APK from [GitHub Releases](https://github.com/LiubeibeiLiu/vultr-pocket-android/releases/latest), or [build and sign your own](docs/BUILDING.md). Android 8.0+ is required. Java DEX supports arm64-v8a without native ABI libraries; the APK is also compatible with other Android ABIs.
 2. Create an app access password on first launch. There is **no shared default password**.
 3. In **设置 → API Token**, enter a token created in your own [Vultr API settings](https://my.vultr.com/settings/#settingsapi). This token belongs to your Vultr account; it is not a project-provided credential.
 4. Configure Vultr's API access controls for the network from which the phone connects. A valid token can still be denied by the source-IP ACL. Do not post the token or an unredacted error dump in an issue.

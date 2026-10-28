@@ -29,7 +29,7 @@ final class DeviceUnlock {
             // Android requires a non-empty title. A space keeps the app-supplied title visually blank.
             BiometricPrompt.Builder builder=new BiometricPrompt.Builder(activity).setTitle(" ");
             if(Build.VERSION.SDK_INT>=30)builder.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK|BiometricManager.Authenticators.DEVICE_CREDENTIAL);
-            else builder.setNegativeButton("使用锁屏密码",activity::runOnUiThread,(d,w)->credential());
+            else builder.setNegativeButton(I18n.text("使用锁屏密码"),activity::runOnUiThread,(d,w)->credential());
             builder.build().authenticate(cancellation,activity::runOnUiThread,new BiometricPrompt.AuthenticationCallback(){
                 @Override public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result){complete(true,"");}
                 @Override public void onAuthenticationError(int code,CharSequence text){

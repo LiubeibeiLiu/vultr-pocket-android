@@ -10,7 +10,7 @@
 
 Vultr Pocket 是独立运行的非官方 Vultr 安卓管理看板。原生 Android 代码直连 Vultr v2 REST API，界面使用 APK 内置的 HTML、CSS 和 JavaScript。无需部署服务器，无需在 VPS 安装采集代理，无第三方分析服务。
 
-当前界面为简体中文。本仓库提供源码和构建说明，尚未附带公开发行的预编译 APK。
+支持**简体中文（默认）和英文**，在 **设置 → 语言** 中切换并保存。可从 [GitHub Releases](https://github.com/LiubeibeiLiu/vultr-pocket-android/releases/latest) 直接下载安装签名 APK，也可自行构建。要求 Android 8.0 或以上，兼容 ARM64（arm64-v8a）。
 
 <p align="center">
   <img src="docs/images/overview.jpg" width="240" alt="仪表：实例状态和账户速览">
@@ -30,6 +30,7 @@ Vultr Pocket 是独立运行的非官方 Vultr 安卓管理看板。原生 Andro
 | 账户 | 待结算、可用余额视角、最近账单与付款 |
 | 设置 | 原生 Token 输入、密码修改、本地日志、前台自动刷新、可选重启 |
 
+- **中英文切换。** 设置中选择简体中文或 English，本机保存，复用现有选择器风格，不触发 API 刷新。见[语言实现说明](docs/I18N.md)。
 - **凭据留在手机。** 首次启动自行创建访问密码。Token 通过原生窗口输入，经 Android Keystore 加密保存，不传入页面 JavaScript。
 - **减少重复登录。** 记住登录使用固定 30 天有效的加密票据；系统验证调用 Android 系统认证界面，支持方式取决于设备能力。
 - **弱网体验。** 先展示符合有效期和月份条件的缓存，再更新。读取失败保留旧数据，不推进成功刷新时间；具体原因放入本地日志。
@@ -39,7 +40,7 @@ Vultr Pocket 是独立运行的非官方 Vultr 安卓管理看板。原生 Andro
 
 ## 开始使用
 
-1. 按[构建说明](docs/BUILDING.md)生成并签名 APK，安装到 Android 8.0 或以上设备。应用为 Java DEX，无本地 ABI 库，可用于 arm64-v8a。
+1. 从 [GitHub Releases](https://github.com/LiubeibeiLiu/vultr-pocket-android/releases/latest) 下载 APK，或按[构建说明](docs/BUILDING.md)自行生成签名包。要求 Android 8.0 或以上；APK 为 Java DEX，无原生 ABI 库，兼容 ARM64，也可用于其他 Android 架构。
 2. 首次启动自行设置访问密码，**没有统一默认密码**。
 3. 在 **设置 → API Token** 输入自己在 [Vultr API 设置](https://my.vultr.com/settings/#settingsapi)创建的 Token。它来自你的 Vultr 账户，不由本项目提供。
 4. 按手机实际出口网络配置 Vultr API 来源 IP 访问控制。Token 正确但 ACL 不允许时，也会访问失败。不要在 Issue 中粘贴密钥或未脱敏的错误内容。

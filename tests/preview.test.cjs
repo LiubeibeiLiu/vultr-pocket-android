@@ -22,6 +22,15 @@ const {createPreview,sampleSnapshot}=require('../tools/preview.cjs');
   assert.equal((await fetch(base+'/')).status,200);passed++;
   assert.equal(sampleSnapshot().instances.every(i=>i.main_ip.startsWith('192.0.2.')),true);passed++;
   assert.equal((await request('/api/reboot-instance',{instance_id:'sample-A'})).data.cancelled,true);passed++;
+  assert.equal((await request('/api/settings',{})).data.language,'zh-CN');passed++;
+  assert.equal((await request('/api/preferences',{language:'en'})).data.language,'en');passed++;
+  assert.equal((await request('/api/session')).data.language,'en');passed++;
+  assert.equal((await request('/api/preferences',{language:'fr'})).status,400);passed++;
+  assert.equal((await request('/api/preferences',{language:'../../en'})).status,400);passed++;
+  assert.equal((await request('/api/settings',{})).data.language,'en');passed++;
+  assert.equal((await request('/api/preferences',{language:'zh-CN'})).data.language,'zh-CN');passed++;
+  assert.equal((await fetch(base+'/i18n.js')).status,200);passed++;
+  assert.equal((await fetch(base+'/i18n-data.js')).status,200);passed++;
   console.log(`Synthetic preview: ${passed}/${passed} checks passed`);
  }finally{await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exitCode=1});
